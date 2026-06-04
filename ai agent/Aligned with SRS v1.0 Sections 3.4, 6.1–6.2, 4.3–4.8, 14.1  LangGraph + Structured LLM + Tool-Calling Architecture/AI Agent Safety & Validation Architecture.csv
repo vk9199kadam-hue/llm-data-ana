@@ -1,0 +1,5 @@
+﻿Range,Action,User Experience
+0.90–1.00,Auto-apply (if enabled),"Green badge, no friction"
+0.70–0.89,Manual approval required,"Yellow badge, explicit click"
+0.50–0.69,Review + override mandatory,"Orange badge, warning tooltip"
+< 0.50,"Advisory only, human review","Red badge, hidden from auto-mode"

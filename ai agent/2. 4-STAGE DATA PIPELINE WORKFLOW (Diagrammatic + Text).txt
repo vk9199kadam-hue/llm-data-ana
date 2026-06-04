@@ -1,0 +1,15 @@
+[STAGE 1: CSV → JSON] → [STAGE 2: DATA CLEANING] → [STAGE 3: AI RELATIONSHIP FINDER] → [STAGE 4: COLUMN ENGINEERING]
+      │                       │                           │                                   │
+      ▼                       ▼                           ▼                                   ▼
+┌──────────────┐      ┌──────────────┐            ┌──────────────┐                  ┌──────────────┐
+│ Polars CSV   │      │ DataPrep +   │            │ LangGraph    │                  │ Polars +     │
+│ Parser       │      │ Rule Engine  │            │ Agent        │                  │ DuckDB       │
+│ chardet      │      │ PII Masking  │            │ (Qwen/Llama) │                  │ Pydantic     │
+│ Schema Inf.  │      │ Imputation   │            │ Confidence   │                  │ Validation   │
+│ JSON Schema  │      │ Outlier/Fuzz │            │ Gating ≥0.65 │                  │ Materialize  │
+│ Validation   │      │ Version Ctrl │            │ Join Hints   │                  │ Formulas     │
+└──────┬───────┘      └──────┬───────┘            └──────┬───────┘                  └──────┬───────┘
+       │                     │                           │                                  │
+       ▼                     ▼                           ▼                                  ▼
+  Clean JSON           Cleaned Parquet        Unified Data Model              Enriched Viz-Ready Dataset
+  (Cache/Redis)        (S3 + Audit Log)       (Relationships + Derived Cols)  (Final Schema + Charts)

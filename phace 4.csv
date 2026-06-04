@@ -1,0 +1,11 @@
+﻿Day,Tasks,Deliverables,Dependencies
+Day 35,"Next.js 14+ project setup, App Router, Tailwind CSS config",Frontend foundation,Phase 1-3
+Day 36,Layout + Navbar + Auth flow (login/logout) + Zustand stores,App shell ready,Day 35
+Day 37,"Upload page: FileDropzone, progress indicator, config panel",CSV upload UI,Day 36
+Day 38,"Dashboard page: DashboardGrid, ChartWidget (Plotly.js), FilterBar",Interactive dashboard,Day 37
+Day 39,"Report viewer: ReportSection, navigation tabs, export menu",Report browsing UI,Day 38
+Day 40,"NLQ chat: MessageList, QueryInput, ChartPreview, reasoning toggle",Conversational UI,Day 39
+Day 41,"Admin panel: User CRUD, role assignment, audit log viewer",Admin controls,Day 40
+Day 42,"PWA support: service worker, offline page, manifest.json",Installable app,Day 41
+Day 43,"Responsive design: mobile/tablet breakpoints, touch targets",Mobile-ready UI,Day 42
+Day 44,Frontend integration tests (Playwright) + E2E flow test,Verified user journeys,Day 35-43

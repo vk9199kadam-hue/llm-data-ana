@@ -1,0 +1,12 @@
+[Input: Clean JSON]
+   ↓
+NODE 1: profile_step → Extract schema, types, nulls, cardinality, correlations
+   ↓
+NODE 2: discover_step → Compute value overlap + Pearson/Spearman → filter candidates (overlap>0.3 OR |r|>0.5)
+   ↓
+NODE 3: reason_step → LLM analyzes candidates → assigns relationship_type, ai_reasoning, analytical_purpose, chart_hint → generates derived columns with exact Polars formulas
+   ↓
+VALIDATION: Pydantic `UnifiedDataModel` check + confidence ≥ 0.65 gating
+   ↓
+IF PASS → NODE 4: executor_step → `eval()` Polars formulas safely → materialize new columns → return unified schema
+IF FAIL → RETRY loop (max 3) → fallback to deterministic rule engine

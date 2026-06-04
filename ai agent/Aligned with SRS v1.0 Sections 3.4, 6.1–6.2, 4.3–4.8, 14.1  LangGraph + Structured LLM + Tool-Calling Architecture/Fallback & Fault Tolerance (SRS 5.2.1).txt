@@ -1,0 +1,5 @@
+AI Call Fails (validation or timeout)
+   → Exponential backoff retry (1s, 2s, 4s)
+   → If still fails → deterministic rule engine activates
+   → User banner: "AI temporarily unavailable — using verified rule-based engine"
+   → Pipeline continues uninterrupted

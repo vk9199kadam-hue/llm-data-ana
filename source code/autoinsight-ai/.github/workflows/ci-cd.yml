@@ -1,0 +1,234 @@
+# =============================================================================
+# AutoInsight AI — CI/CD Pipeline (Phase 5, Day 48)
+# GitHub Actions: lint, test, build, deploy
+# =============================================================================
+
+name: AutoInsight AI CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy to production?'
+        required: true
+        default: false
+        type: boolean
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ── Job 1: Lint ──────────────────────────────────────────────────────────
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8 mypy black isort
+
+      - name: Lint with flake8
+        run: |
+          flake8 backend/ tests/ --count --statistics \
+            --max-line-length=100 \
+            --ignore=E203,W503,W504 \
+            --exclude=__pycache__,*.pyc
+
+      - name: Check formatting with black
+        run: |
+          black --check backend/ tests/ --line-length=100
+
+      - name: Check imports with isort
+        run: |
+          isort --check-only backend/ tests/ --profile black
+
+      - name: Type check with mypy
+        run: |
+          mypy backend/ --ignore-missing-imports --warn-unused-configs
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Lint frontend
+        run: |
+          cd frontend
+          npm run lint
+
+      - name: TypeScript type check
+        run: |
+          cd frontend
+          npx tsc --noEmit
+
+  # ── Job 2: Test ──────────────────────────────────────────────────────────
+  test:
+    name: Run Tests
+    needs: [lint]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: autoinsight_test
+          POSTGRES_USER: autoinsight
+          POSTGRES_PASSWORD: changeme
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U autoinsight -d autoinsight_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov pytest-mock
+
+      - name: Run unit tests with coverage
+        env:
+          DATABASE_URL: postgresql://autoinsight:changeme@localhost:5432/autoinsight_test
+          REDIS_URL: redis://localhost:6379/0
+          JWT_SECRET: test-secret-key-for-ci
+          LLM_PROVIDER: groq
+        run: |
+          python -m pytest tests/ -v --cov=backend --cov-report=xml \
+            --cov-report=term-missing --timeout=60 -x
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  # ── Job 3: Build ─────────────────────────────────────────────────────────
+  build:
+    name: Build Docker Images
+    needs: [test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log into registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: production
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+  # ── Job 4: Deploy ────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to Production
+    needs: [build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_HOST_KEY }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy via Docker Compose
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "cd /opt/autoinsight && \
+             docker compose -f docker-compose.prod.yml pull && \
+             docker compose -f docker-compose.prod.yml up -d --remove-orphans && \
+             docker system prune -f"
+
+      - name: Health check
+        run: |
+          sleep 15
+          curl -f http://${{ secrets.DEPLOY_HOST }}/health || exit 1
+          echo "✅ Deployment healthy"

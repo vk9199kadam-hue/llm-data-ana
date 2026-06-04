@@ -1,0 +1,9 @@
+User/Stage triggers agent
+   → Agent profiles data (deterministic)
+   → Agent computes overlaps/correlations (deterministic)
+   → Agent sends candidates + profile to LLM
+   → LLM returns structured relationships + derived columns
+   → Pydantic validates output
+   → Confidence gate filters < 0.65
+   → Executor materializes columns
+   → Returns UnifiedDataModel to frontend

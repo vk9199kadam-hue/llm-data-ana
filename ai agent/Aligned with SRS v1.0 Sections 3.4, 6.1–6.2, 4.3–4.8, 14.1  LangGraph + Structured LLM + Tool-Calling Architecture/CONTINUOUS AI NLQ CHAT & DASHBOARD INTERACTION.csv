@@ -1,0 +1,6 @@
+﻿Step,AI Agent Action,Guardrail
+1. User types: """Show revenue by region last quarter""","LLM parses intent → extracts metrics, dimensions, filters",Validates against dataset schema
+2. Tool Call: run_sql_query(sql),Executes in DuckDB sandbox → returns result JSON,"Read-only, parameterized, timeout 5s"
+3. AI Reasoning: format_result + generate_insight,Returns chart config (Vega-Lite/Plotly) + plain-English explanation,Statistical verification before display
+4. User follow-up: """Make it a bar chart""",Maintains 20-turn conversation context in Redis,Context compressed → token-efficient
+5. Output,Renders chart in UI + adds to dashboard + logs to audit trail,Show Reasoning toggle exposes full prompt/response log

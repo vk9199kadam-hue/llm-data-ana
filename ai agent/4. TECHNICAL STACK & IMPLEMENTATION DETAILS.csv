@@ -1,0 +1,9 @@
+﻿Component,Technology,Version/Config,Purpose
+Frontend,Next.js 14+ (App Router),"React, Tailwind, Zustand, React Query","PWA, responsive dashboards, NLQ chat, admin UI"
+Backend,FastAPI,"Python 3.11+, Pydantic v2, Uvicorn","REST API, auth middleware, request validation"
+AI Orchestration,LangGraph + LangChain,langgraph>=0.2.0", "langchain-core>=0.3.0,"Stateful agents, tool calling, prompt registry"
+LLM Engine,Qwen 2.5 72B (Groq Free) OR Llama 3.1 8B (Ollama Local),"JSON mode, "temperature=0.1", "max_tokens=4096,"Schema inference, cleaning, insights, NLQ, reports"
+Data Processing,Polars + DuckDB + DataPrep,polars>=0.20.0", "duckdb>=0.10.0", "dataprep,"CSV parsing, JSON conversion, cleaning, querying"
+Storage,"PostgreSQL 15+, Redis 7+, S3/MinIO",asyncpg", "aioredis", "boto3,"Metadata, cache, task queue, file storage"
+Async Jobs,Celery + Redis,celery>=5.3.0,"Chunked processing, report generation, scheduling"
+Validation,Pydantic v2,Strict JSON schema enforcement,"SRS 6.2.1 compliance, hallucination prevention"

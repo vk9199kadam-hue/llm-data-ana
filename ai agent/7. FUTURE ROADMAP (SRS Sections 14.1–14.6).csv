@@ -1,0 +1,5 @@
+﻿Phase,Feature,Target
+V2,"Live connectors (PostgreSQL, Snowflake, API streams)",Q3 2026
+V3,"Distributed Spark processing (>10GB datasets), gVisor sandbox",Q4 2026
+V4,"Visual ER builder, autonomous monitoring agents, multi-dataset joins",Q1 2027
+V5,"Mobile app (React Native), voice NLQ, fine-tuned domain LLM",Q3 2027

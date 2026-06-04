@@ -1,0 +1,13 @@
+﻿SRS Section,AI Agent Implementation,Status
+6.1.1 Single AI Engine,Configurable via llm_factory.py (Claude/Groq/Ollama),✅
+6.1.2 Prompt Registry,"Versioned prompts in PostgreSQL, fetched at runtime",✅
+6.1.3 Tool Calling,LangGraph agents invoke run_sql_query", "profile_schema", etc.",✅
+6.2.1 Schema Validation,with_structured_output() + Pydantic enforcement,✅
+6.2.2 Confidence Gating,Auto-filter < 0.65", retry loop, fallback engine",✅
+4.5.2 Correlation Analysis,"Pearson/Spearman pre-LLM, cited in insights",✅
+4.4.3 Column Operations,Polars eval()" sandbox, exact formula execution",✅
+4.9.2 Data Lineage,transformation_audit + audit_trail logs,✅
+5.2.1 Fault Tolerance,Deterministic fallback on LLM failure,✅
+14.1 Multi-Dataset Prep,entity_relationship_graph + suggested_join,✅
+4.6.1 Smart Chart Recs,chart_hint" per relationship, auto-layout engine",✅
+4.8.1-4.8.7 Report Export,JSON bundle → Puppeteer/Jinja2 → PDF/HTML/Excel,✅

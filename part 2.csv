@@ -1,0 +1,15 @@
+﻿Day,Tasks,Deliverables,Dependencies
+Day 11,"Stage 1: CSV parser (Polars), chardet encoding detection",Raw CSV → DataFrame,Phase 1
+Day 12,Stage 1: LLM schema inference (infer_schema_prompt"), Pydantic validation",Structured JSON + schema.json,Day 11
+Day 13,"Stage 1: Redis caching, error handling, upload progress API",Production-ready ingestion,Day 12
+Day 14,"Stage 2: DataPrep quality profiling (missing %, outliers, duplicates)",Data quality report,Day 13
+Day 15,Stage 2: LLM cleaning plan generation (cleaning_plan_prompt),Structured cleaning suggestions,Day 14
+Day 16,Stage 2: Diff preview UI logic + user approval flow,Interactive cleaning review,Day 15
+Day 17,Stage 2: Polars transformation execution + Parquet snapshot,Cleaned dataset v1.0,Day 16
+Day 18,Stage 2: Version control + audit logging to PostgreSQL,Full lineage tracking,Day 17
+Day 19,Stage 3: LangGraph setup + profile_step (deterministic profiling),Node 1 complete,Day 18
+Day 20,Stage 3: discover_step (value overlap + correlation candidates),Node 2 complete,Day 19
+Day 21,Stage 3: reason_step (LLM reasoning with structured output),Node 3 complete,Day 20
+Day 22,Stage 3: Validation gate (Pydantic + confidence ≥0.65) + retry logic,Fault-tolerant agent,Day 21
+Day 23,Stage 3: executor_step (safe Polars eval + materialization),UnifiedDataModel output,Day 22
+Day 24,End-to-end pipeline test: CSV → UnifiedDataModel (mock LLM),Pipeline integration verified,Day 11-23

@@ -1,0 +1,5 @@
+﻿Endpoint,Method,Payload,Response
+/api/v1/pipeline/run,POST,multipart/form-data (CSV),UnifiedDataModel JSON
+/api/v1/reports/generate-complete,POST,cleaned_json: list[dict],ReportBundle JSON
+/api/v1/data-model/architect,POST,json_data: list[dict],UnifiedDataModel JSON
+/api/v1/columns/transform,POST,TransformationRequest,TransformationResult JSON

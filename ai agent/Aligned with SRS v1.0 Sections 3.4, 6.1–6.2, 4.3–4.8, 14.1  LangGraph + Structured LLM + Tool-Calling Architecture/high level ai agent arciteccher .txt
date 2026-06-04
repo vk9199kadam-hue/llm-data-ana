@@ -1,0 +1,32 @@
+[User Uploads CSV]
+       │
+       ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                 AI ORCHESTRATION LAYER (LangGraph)                      │
+│  Stateful, multi-agent workflow with deterministic-first guardrails     │
+└───────────────┬──────────────────────────────────────────┬──────────────┘
+                │                                          │
+        ┌───────▼───────┐                          ┌──────▼───────┐
+        │  STAGE 1      │                          │  STAGE 2     │
+        │  CSV → JSON   │                          │  DATA CLEAN  │
+        │  (AI Schema)  │                          │  (AI Plan)   │
+        └───────┬───────                          └──────┬───────┘
+                │                                          │
+        ┌───────▼──────────────────────────────────────────▼───────┐
+        │              STAGE 3: CORE AGENTIC AGENT                 │
+        │  LangGraph Workflow: Profile → Discover → Reason → Gate  │
+        │  • Relationship Discovery (FK, Statistical, Hierarchical)│
+        │  • Derived Column Generation (Math, Conditional, Agg)    │
+        │  • Unified Data Model Assembly                           │
+        └───────┬──────────────────────────────────────────┬───────┘
+                │                                          │
+        ┌───────▼───────┐                          ┌──────▼───────┐
+        │  STAGE 4      │                          │  VISUALIZE   │
+        │  REPORT ENGINE│                          │  + NLQ CHAT  │
+        │  (8 Sub-Agents│                          │  (AI → SQL   │
+        │   Concurrent) │                          │   → Chart)   │
+        └───────┬───────┘                          └──────┬───────┘
+                │                                          │
+                └──────────────────┬───────────────────────┘
+                                   ▼
+                    [Final Dashboard + Reports + Exports]

@@ -1,0 +1,7 @@
+﻿Layer,SRS Reference,Purpose,Key Technologies
+Presentation,"3.2, 9.1","Zero-code UI for upload, dashboard, NLQ chat, reports","Next.js, React, Plotly.js, Vega-Lite, Zustand, Tailwind"
+API Gateway,"3.3, 8.0","REST endpoints, auth, RBAC, request validation","FastAPI, Pydantic, JWT, OAuth2/SAML"
+AI Orchestration,"3.4, 6.1","LangGraph agents, prompt registry, tool calling, confidence gating","LangChain/LangGraph, Anthropic/Groq/Ollama, Pydantic"
+Data Engine,"3.5, 4.2–4.5","CSV parsing, JSON conversion, cleaning, EDA, forecasting","Polars, DuckDB, DataPrep, Scikit-learn, Prophet, SciPy"
+Storage,"3.6, 7.0","Files, metadata, audit logs, cache, task queue","S3/MinIO, PostgreSQL 15+, Redis 7+, Celery"
+External AI,"9.3, 6.1.1","Structured JSON reasoning, NLQ → SQL, insight generation",Qwen 2.5 72B (Groq Free) or Llama 3.1 8B (Ollama Local)

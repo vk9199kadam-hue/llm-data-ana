@@ -1,0 +1,5 @@
+﻿Step,AI Agent Action,Deterministic Guardrail,SRS Mapping
+1.1,Receives first 100 rows + column names,chardet" encoding detection, delimiter sampling",4.2.3–4.2.4
+1.2,Calls LLM: infer_schema_prompt → returns JSON with "{column, type, format, confidence, reasoning}",Validates against Pydantic SchemaInferenceResponse,6.2.1
+1.3,Flags columns with confidence < 0.70 for manual review,Type casting engine applies only approved types,4.2.5–4.2.6
+1.4,Outputs structured JSON + schema.json,Validates full JSON against inferred JSON Schema,6.2.1

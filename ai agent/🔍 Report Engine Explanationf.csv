@@ -1,0 +1,5 @@
+﻿Phase,Purpose,LLM Usage,SRS Mapping
+1. Profiling,"Extract all metrics, distributions, correlations, domain hints",None,"4.5.1–4.5.3, 6.2.5"
+2. Parallel Agents,8 specialized sub-agents generate exact report indices you specified,✅ Qwen/Llama with structured prompts,"4.8.1–4.8.4, 6.1.2"
+3. Validation,"Pydantic enforcement, confidence gating, retry/fallback logic",✅ Validation only,"6.2.1, 6.2.2, 5.2.1"
+4. Assembly,"Bundle creation, export metadata, audit trail, visualization handoff",❌ Deterministic,"4.9.2, 4.8.1–4.8.7"

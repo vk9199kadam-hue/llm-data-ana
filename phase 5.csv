@@ -1,0 +1,7 @@
+﻿Day,Tasks,Deliverables,Dependencies
+Day 45,"Performance profiling + caching optimization (Redis, query cache)",<3s dashboard load,Phase 1-4
+Day 46,"Security audit: OWASP ZAP scan, JWT validation, RBAC penetration test",Zero critical vulnerabilities,Day 45
+Day 47,"Load testing (Locust): 100 concurrent users, NLQ stress test",Performance benchmarks,Day 46
+Day 48,"CI/CD pipeline: GitHub Actions (lint, test, build, deploy)",Automated releases,Day 47
+Day 49,Production Docker setup + Kubernetes manifests (optional),Deployable artifacts,Day 48
+Day 50,UAT with 5 business users + admin runbook + final documentation,Production-ready handover,Day 49

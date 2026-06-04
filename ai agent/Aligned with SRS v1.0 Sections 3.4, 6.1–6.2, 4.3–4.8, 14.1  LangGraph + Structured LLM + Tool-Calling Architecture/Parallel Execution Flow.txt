@@ -1,0 +1,11 @@
+[DataProfile Object]
+   ↓
+8 LangChain chains fire concurrently (each with dedicated prompt + Pydantic schema)
+   ↓
+Each returns: {report_type, sections: [{title, content, confidence, data_references, statistical_evidence}], overall_confidence, generation_timestamp}
+   ↓
+Validation Layer: Confidence < 0.70 → flag for review | Retry on Pydantic failure
+   ↓
+Assembly Layer: Merge into ReportBundle JSON + attach audit_trail + export_metadata
+   ↓
+Output: Ready for PDF/HTML/Excel export engines + dashboard handoff

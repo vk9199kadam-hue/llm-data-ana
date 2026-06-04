@@ -1,0 +1,9 @@
+﻿Sub-Agent,AI Focus,Data Input,Output Structure
+Business Understanding,"Domain inference, KPI mapping, stakeholder simulation",Schema + sample values,"{sections[], overall_confidence}"
+Data Collection,"Source metadata, format specs, data dictionary",File metadata + schema,Structured acquisition narrative
+Data Cleaning/Analysis,"Quality metrics, transformation impact",Cleaning audit log + stats,Explains cleaning rationale
+EDA Report,Univariate/bivariate/multivariate patterns,Distribution stats + correlation matrix,Narrates findings + visual descriptions
+Statistical Analysis,"Hypothesis testing, regression, significance",Correlation matrix + OLS results,Interprets validity + warns against causation
+Dashboard/Visualization,"KPI layout, chart specs, filter architecture",KPI candidates + cardinality,Recommends chart types + interaction flow
+Insights Report,"Pattern detection, anomaly flagging, business impact",Outliers + trend deviations,Translates stats → business language
+Recommendations,"Priority scoring, implementation roadmap",Insights + KPI gaps,Structures actionable steps + timelines

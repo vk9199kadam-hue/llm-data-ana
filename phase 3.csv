@@ -1,0 +1,11 @@
+﻿Day,Tasks,Deliverables,Dependencies
+Day 25,Phase 1: Deterministic profiling functions (5 functions),DataProfile object,Phase 2
+Day 26,"Phase 2: Sub-agent 1-4 prompts (Business, Collection, Cleaning, EDA)",4 prompt templates,Day 25
+Day 27,"Phase 2: Sub-agent 5-8 prompts (Statistical, Dashboard, Insights, Recommendations)",4 more prompt templates,Day 26
+Day 28,Phase 2: Parallel execution with asyncio.gather + error handling,8 concurrent LLM calls,Day 27
+Day 29,Phase 3: Pydantic validation per report section + confidence gating,Validated report sections,Day 28
+Day 30,Phase 3: Retry logic (3 attempts) + deterministic fallback,Fault-tolerant report gen,Day 29
+Day 31,Phase 4: ReportBundle assembly + audit trail attachment,Unified report JSON,Day 30
+Day 32,Phase 4: HTML/Markdown export (Jinja2 templates),Web-ready reports,Day 31
+Day 33,Phase 4: PDF export (Puppeteer) + Excel export (OpenPyXL),Print-ready exports,Day 32
+Day 34,End-to-end report test: UnifiedDataModel → PDF/HTML/XLSX,Export pipeline verified,Day 25-33

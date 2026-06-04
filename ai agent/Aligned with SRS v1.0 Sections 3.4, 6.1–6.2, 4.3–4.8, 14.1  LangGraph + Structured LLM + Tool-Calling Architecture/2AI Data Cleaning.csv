@@ -1,0 +1,6 @@
+﻿Step,AI Agent Action,Deterministic Guardrail,SRS Mapping
+2.1,Receives DataPrep" quality profile: missing %, outliers, duplicates, type mismatches","Statistical engine computes exact metrics (IQR, Z-score, Levenshtein)",4.3.1–4.3.4
+2.2,Calls LLM: generate_cleaning_plan → returns structured plan with imputation/outlier/dedup strategies,Each suggestion includes confidence (0.0–1.0),4.3.5–4.3.6
+2.3,Presents diff preview to user,User accepts/rejects/modifies; manual overrides logged,4.3.7
+2.4,Applies approved transformations,Creates Parquet snapshot + version history,4.3.8
+2.5,Fallback trigger,If LLM fails validation → rule-based imputation (mean/median/mode),5.2.1

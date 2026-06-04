@@ -1,0 +1,14 @@
+0:00 ─ User uploads sales.csv (500MB)
+0:05 ─ Stage 1: AI infers schema → returns JSON + confidence scores
+0:12 ─ Stage 2: AI generates cleaning plan → user approves → Parquet snapshot created
+0:20 ─ Stage 3: LangGraph agent runs:
+        ├─ Profile schema (0.5s, deterministic)
+        ├─ Discover candidates (1.2s, deterministic)
+        ├─ LLM reasoning + structuring (3.8s, Qwen/Claude)
+        ├─ Validation + confidence gating (0.2s)
+        └─ Executor materializes 4 new columns (1.1s, Polars)
+0:26 ─ Unified Data Model ready → relationships + derived columns + final schema
+0:30 ─ Stage 4: 8 report agents generate in parallel (4.2s)
+0:34 ─ Dashboard auto-layout renders (Plotly.js + Vega-Lite)
+0:35 ─ NLQ chat ready for conversational queries
+0:40  User exports PDF/HTML/Excel + schedules weekly refresh

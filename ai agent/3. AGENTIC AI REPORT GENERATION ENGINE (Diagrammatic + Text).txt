@@ -1,0 +1,47 @@
+[CLEANED DATASET]
+      │
+      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ PHASE 1: DETERMINISTIC PROFILING (Zero LLM)                     │
+│ • extract_schema_metadata()                                     │
+│ • compute_univariate_stats()                                    │
+│ • compute_bivariate_matrix()                                    │
+│ • detect_trends_seasonality()                                   │
+│ • infer_domain_context()                                        │
+│ Output: DataProfile object                                      │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ PHASE 2: PARALLEL SUB-AGENTS (8 Concurrent LLM Calls)           │
+│ ┌─────────────────┐ ─────────────────┐ ┌─────────────────     │
+│ │ Business Under- │ │ Data Collection │ │ Cleaning/Analysis│     │
+│ │ standing        │ │                 │ │                  │     │
+│ └─────────────────┘ └─────────────────┘ ─────────────────┘     │
+│ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐     │
+│ │ EDA             │ │ Statistical     │ │ Dashboard/Viz   │     │
+│ │                 │ │ Analysis        │ │                 │     │
+│ └─────────────────┘ └─────────────────┘ └─────────────────┘     │
+│ ┌─────────────────┐ ┌─────────────────┐                          │
+│ │ Insights        │ │ Recommendations │                          │
+│ ─────────────────┘ └─────────────────                          │
+│ Each returns: {report_type, sections[], overall_confidence, ts}  │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ PHASE 3: VALIDATION & CONFIDENCE GATING (SRS 6.2.1/6.2.2)       │
+│ • Pydantic schema validation per report                         │
+│ • Confidence < 0.70 → flag for manual review                    │
+│ • Retry loop on validation failure (max 3 attempts)             │
+│ • Fallback: deterministic rule-based summary                    │
+──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ PHASE 4: ASSEMBLY & EXPORT HOOKS (SRS 4.8, 4.9.2)               │
+│ • Merge into ReportBundle JSON                                  │
+│ • Attach audit_trail, export_metadata, viz_payload_ready        │
+│ • Export engines: Puppeteer (PDF), Jinja2 (HTML/Markdown)       │
+│ • Store in S3 + index in PostgreSQL `reports` table             │
+└─────────────────────────────────────────────────────────────────┘

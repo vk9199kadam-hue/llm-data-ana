@@ -1,0 +1,243 @@
+"the llm " Qwen 2.5 72B (Cloud Free Tier)
+Groq API key (qwen2.5-72b)
+Sub-second latency, free tier, highly reliable structured output
+pip install langchain-groq "
+
+
+autoinsight-data-model-agent/
+├── __init__.py
+├── schemas.py          # SRS 6.2.1: Strict Pydantic validation
+├── tools.py            # Statistical & schema profiling tools
+├── agent.py            # LangGraph agentic workflow
+├── executor.py         # SRS 4.4.3: Polars column materialization
+├── api.py              # FastAPI endpoint
+└── requirements.txt 
+
+📄 requirements.txt
+ 
+langgraph>=0.2.0
+langchain-ollama>=0.2.0  # or langchain-groq
+langchain-core>=0.3.0
+polars>=0.20.0
+pandas>=2.0.0
+pydantic>=2.5.0
+scipy>=1.11.0
+fastapi>=0.109.0
+uvicorn>=0.27.0 
+
+📄 schemas.py (SRS 6.2.1 Compliant)
+
+from pydantic import BaseModel, Field, field_validator
+from typing import List, Dict, Any, Literal
+from typing_extensions import TypedDict
+
+class Relationship(BaseModel):
+    source_column: str
+    target_column: str
+    relationship_type: Literal["foreign_key", "statistical", "hierarchical", "categorical_group", "temporal"]
+    confidence: float = Field(ge=0.0, le=1.0)
+    ai_reasoning: str
+    analytical_purpose: str  # WHY it exists & what visualization it enables
+    suggested_join: str
+    chart_hint: Literal["bar", "scatter", "line", "heatmap", "map", "tree"]
+
+class DerivedColumn(BaseModel):
+    new_column_name: str
+    source_columns: List[str]
+    operation: Literal["math", "aggregation", "conditional", "datetime_extract", "string_parse"]
+    exact_formula: str  # Valid Polars expression
+    business_rationale: str
+    confidence: float = Field(ge=0.0, le=1.0)
+
+class UnifiedDataModel(BaseModel):
+    relationships: List[Relationship]
+    derived_columns: List[DerivedColumn]
+    final_viz_schema: List[str]
+    entity_relationship_graph: Dict[str, List[str]]
+    transformation_audit: str
+    overall_confidence: float = Field(ge=0.0, le=1.0)
+
+class AgentState(TypedDict):
+    input_data: List[Dict[str, Any]]
+    schema_profile: Dict[str, Any]
+    relationships: List[Relationship]
+    derived_columns: List[DerivedColumn]
+    reasoning_log: List[str]
+    validation_passed: bool
+    final_model: UnifiedDataModel
+
+📄 tools.py (Deterministic Profiling)
+
+import polars as pl
+import pandas as pd
+import numpy as np
+from scipy.stats import pearsonr
+
+def profile_schema(data: List[Dict]) -> Dict:
+    df = pl.from_pandas(pd.json_normalize(data))
+    num_cols = df.select_dtypes(include='number').columns.tolist()
+    cat_cols = df.select_dtypes(include='object').columns.tolist()
+    corr = {}
+    if len(num_cols) > 1:
+        corr_matrix = df[num_cols].corr().to_pandas()
+        corr = {f"{c1}__{c2}": round(v, 3) for c1 in num_cols for c2 in num_cols if c1 < c2 and abs(corr_matrix.loc[c1, c2]) > 0.5}
+    return {
+        "columns": df.columns.tolist(),
+        "types": {c: str(df.schema[c]) for c in df.columns},
+        "null_counts": {c: int(df[c].null_count()) for c in df.columns},
+        "cardinality": {c: int(df[c].n_unique()) for c in df.columns},
+        "strong_correlations": corr
+    }
+
+def compute_pearson(df: pl.DataFrame, c1: str, c2: str) -> float:
+    valid = df.select(c1, c2).drop_nulls().to_pandas()
+    if len(valid) < 10: return 0.0
+    try:
+        return round(pearsonr(valid[c1], valid[c2])[0], 3)
+    except: return 0.0
+
+📄 agent.py (Agentic Workflow) 
+
+from langgraph.graph import StateGraph, END
+from langchain_ollama import ChatOllama
+from langchain_core.prompts import ChatPromptTemplate
+from pydantic import ValidationError
+import polars as pl
+import pandas as pd
+from .schemas import *
+from .tools import *
+
+# LLM Setup (Free)
+llm = ChatOllama(model="llama3.1:8b", temperature=0.1)
+
+SYSTEM_PROMPT = """
+You are an Expert Data Model Architect. Given dataset schema, statistical profiles, and relationship candidates:
+1. Validate & filter relationships (confidence >= 0.65 only)
+2. For each, provide: relationship_type, ai_reasoning, analytical_purpose, chart_hint
+3. Generate 3-5 derived columns that unlock deeper analysis (exact Polars formulas)
+4. Assemble final unified schema for visualization (original + derived)
+5. Return STRICTLY valid JSON matching the UnifiedDataModel Pydantic schema.
+RULES:
+- Never invent columns. Derive ONLY from existing data.
+- Base confidence on statistical evidence + business logic.
+- Analytical purpose must specify: which visualization it enables & what business question it answers.
+- Output ONLY JSON. No markdown, no explanations.
+"""
+
+def profile_step(state: AgentState) -> AgentState:
+    state["schema_profile"] = profile_schema(state["input_data"])
+    state["reasoning_log"].append("✅ Schema & statistics profiled")
+    return state
+
+def discover_step(state: AgentState) -> AgentState:
+    df = pl.from_pandas(pd.json_normalize(state["input_data"]))
+    candidates = []
+    cols = state["schema_profile"]["columns"]
+    for i, c1 in enumerate(cols):
+        for c2 in cols[i+1:]:
+            overlap = len(set(df[c1].drop_nulls().to_list()) & set(df[c2].drop_nulls().to_list())) / max(1, len(set(df[c1].drop_nulls().to_list())))
+            corr = compute_pearson(df, c1, c2)
+            if overlap > 0.3 or abs(corr) > 0.5:
+                candidates.append({"source": c1, "target": c2, "overlap": round(overlap, 3), "corr": corr})
+    state["reasoning_log"].append(f"🔍 Found {len(candidates)} relationship candidates")
+    state["_candidates"] = candidates
+    return state
+
+def reason_step(state: AgentState) -> AgentState:
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", SYSTEM_PROMPT),
+        ("human", "Schema: {schema}\nCandidates: {candidates}\nReturn UnifiedDataModel JSON:")
+    ])
+    # Force structured output
+    chain = prompt | llm.with_structured_output(UnifiedDataModel)
+    try:
+        model = chain.invoke({
+            "schema": str(state["schema_profile"]),
+            "candidates": str(state["_candidates"])
+        })
+        # SRS 6.2.2: Confidence gating
+        model.relationships = [r for r in model.relationships if r.confidence >= 0.65]
+        model.derived_columns = [c for c in model.derived_columns if c.confidence >= 0.65]
+        model.overall_confidence = round(
+            (sum(r.confidence for r in model.relationships) + sum(c.confidence for c in model.derived_columns)) / 
+            max(1, len(model.relationships) + len(model.derived_columns)), 3
+        )
+        state["final_model"] = model
+        state["validation_passed"] = True
+        state["reasoning_log"].append("🤖 AI reasoning & schema assembly complete")
+    except ValidationError as e:
+        state["validation_passed"] = False
+        state["reasoning_log"].append(f"⚠️ Schema validation failed: {e}")
+    return state
+
+def build_graph():
+    graph = StateGraph(AgentState)
+    graph.add_node("profile", profile_step)
+    graph.add_node("discover", discover_step)
+    graph.add_node("reason", reason_step)
+    
+    graph.add_edge("profile", "discover")
+    graph.add_edge("discover", "reason")
+    graph.add_conditional_edges(
+        "reason",
+        lambda s: "end" if s["validation_passed"] else "retry",
+        {"end": END, "retry": "reason"}
+    )
+    graph.set_entry_point("profile")
+    return graph.compile()
+
+📄 executor.py (SRS 4.4.3: Materialize Columns)
+
+import polars as pl
+import pandas as pd
+from .schemas import UnifiedDataModel
+
+def materialize_model(json_data: list[dict], model: UnifiedDataModel) -> pl.DataFrame:
+    df = pl.from_pandas(pd.json_normalize(json_data))
+    audit_log = []
+    
+    for col_def in model.derived_columns:
+        try:
+            expr = eval(col_def.exact_formula, {"__builtins__": {}, "pl": pl})
+            df = df.with_columns(expr.alias(col_def.new_column_name))
+            audit_log.append(f"✅ Created {col_def.new_column_name} via {col_def.operation}")
+        except Exception as e:
+            audit_log.append(f"⚠️ Failed {col_def.new_column_name}: {str(e)}")
+            
+    model.transformation_audit = " | ".join(audit_log)
+    return df 
+
+📄 api.py (FastAPI Endpoint)
+
+from fastapi import FastAPI, HTTPException
+from .agent import build_graph
+from .executor import materialize_model
+from .schemas import UnifiedDataModel
+
+app = FastAPI()
+agent = build_graph()
+
+@app.post("/api/v1/data-model/architect", response_model=UnifiedDataModel)
+async def architect_data_model(json_data: list[dict]):
+    initial_state = {
+        "input_data": json_data,
+        "schema_profile": {},
+        "relationships": [],
+        "derived_columns": [],
+        "reasoning_log": [],
+        "validation_passed": False,
+        "final_model": None
+    }
+    result = agent.invoke(initial_state)
+    
+    if not result["validation_passed"]:
+        raise HTTPException(status_code=500, detail="AI output failed SRS 6.2.1 validation. Retry.")
+        
+    # Execute & return final viz-ready DataFrame
+    final_df = materialize_model(json_data, result["final_model"])
+    result["final_model"].final_viz_schema = final_df.columns
+    result["final_model"].transformation_audit += " | ✅ Materialized & ready for visualization"
+    
+    return result["final_model"]
+
+

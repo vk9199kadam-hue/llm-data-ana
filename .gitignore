@@ -1,0 +1,41 @@
+# Virtual environments
+venv/
+.venv/
+env/
+myenv/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.example
+
+# Node/Next.js
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# IDEs and OS
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
