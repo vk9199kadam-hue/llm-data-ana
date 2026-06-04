@@ -40,7 +40,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
-from backend.cache import cache_manager
+from backend.cache import cache_manager, TTL_PIPELINE
 from backend.config import settings
 from backend.storage import StorageManager
 

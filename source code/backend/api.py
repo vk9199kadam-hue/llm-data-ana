@@ -541,10 +541,10 @@ async def pipeline_events_sse(pipeline_id: str):
                         }
                         break
             else:
-            yield {
-                "event": "pipeline_not_found",
-                "data": json.dumps({"pipeline_id": pipeline_id}),
-            }
+                yield {
+                    "event": "pipeline_not_found",
+                    "data": json.dumps({"pipeline_id": pipeline_id}),
+                }
                 break
 
             await asyncio.sleep(1)

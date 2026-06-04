@@ -85,27 +85,29 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Pipeline Execution Tracking
 CREATE TABLE IF NOT EXISTS pipelines (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    pipeline_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'queued',
     file_name VARCHAR(255),
     file_size BIGINT,
     file_hash VARCHAR(64),
     llm_provider VARCHAR(50) DEFAULT 'groq',
-    stages_completed TEXT[] DEFAULT '{}',
-    error_message TEXT,
+    stages_completed JSONB DEFAULT '[]',
+    total_processing_time_ms INTEGER,
+    unified_data_model JSONB,
+    error TEXT,
     started_at TIMESTAMPTZ,
     completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT valid_pipeline_status CHECK (
-        status IN ('queued', 'running', 'completed', 'failed', 'cancelled')
+        status IN ('queued', 'running', 'completed', 'failed', 'cancelled', 'paused')
     )
 );
 
 -- Data Models (UnifiedDataModel JSONB Storage)
 CREATE TABLE IF NOT EXISTS data_models (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    pipeline_id UUID REFERENCES pipelines(id) ON DELETE CASCADE,
+    pipeline_id UUID REFERENCES pipelines(pipeline_id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     model_json JSONB NOT NULL,
     confidence_avg FLOAT,
@@ -187,6 +189,7 @@ CREATE TABLE IF NOT EXISTS files (
 # ── Indexes for Performance ───────────────────────────────────────────────
 
 CREATE_INDEXES = """
+CREATE INDEX IF NOT EXISTS idx_pipelines_pipeline_id ON pipelines(pipeline_id);
 CREATE INDEX IF NOT EXISTS idx_pipelines_user_id ON pipelines(user_id);
 CREATE INDEX IF NOT EXISTS idx_pipelines_status ON pipelines(status);
 CREATE INDEX IF NOT EXISTS idx_pipelines_created_at ON pipelines(created_at DESC);
