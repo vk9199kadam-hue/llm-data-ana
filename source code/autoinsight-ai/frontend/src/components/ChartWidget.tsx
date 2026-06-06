@@ -29,6 +29,7 @@ interface ChartDataPoint {
   marker?: Record<string, any>;
   text?: string[];
   hovertemplate?: string;
+  [key: string]: any;
 }
 
 interface ChartWidgetProps {
