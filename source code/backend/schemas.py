@@ -139,7 +139,7 @@ class ColumnInference(BaseModel):
         default_factory=list, max_length=5, description="Up to 5 sample values"
     )
 
-    @field_validator("confidence")
+    @field_validator("confidence", mode="before")
     @classmethod
     def clamp_confidence(cls, v: float) -> float:
         """Clamp confidence to valid range."""
@@ -501,7 +501,7 @@ class DataProfile(BaseModel):
     univariate_stats: Dict[str, Dict[str, float]] = Field(
         ..., description="Per-column univariate statistics"
     )
-    bivariate_matrix: Dict[str, Dict[str, float]] = Field(
+    bivariate_matrix: Dict[str, Dict[str, Any]] = Field(
         ..., description="Pairwise correlation matrix"
     )
     trends: Optional[Dict[str, Any]] = Field(

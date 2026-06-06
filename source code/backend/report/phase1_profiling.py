@@ -278,6 +278,17 @@ class Phase1_Profiling:
         for col1 in numeric_cols:
             matrix[col1] = {}
             for col2 in numeric_cols:
+                if col1 == col2:
+                    matrix[col1][col2] = {
+                        "pearson_r": 1.0,
+                        "spearman_r": 1.0,
+                        "p_value": 0.0,
+                        "sample_size": len(df[col1].drop_nulls()),
+                        "significant": True,
+                        "strength": "very_strong",
+                    }
+                    continue
+
                 r_p = pearson.get(col1, {}).get(col2, 0.0)
                 r_s = spearman.get(col1, {}).get(col2, 0.0)
                 

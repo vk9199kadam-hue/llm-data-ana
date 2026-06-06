@@ -308,7 +308,7 @@ class Phase2_SubAgents:
         variables: Dict[str, str],
     ) -> str:
         """Build the user prompt for a sub-agent."""
-        parts = [f"Generate a {section_type.value} report section based on the following data profile.\n"]
+        parts = [f"Generate a {section_type.value} ({section_type.name}) report section based on the following data profile.\n"]
 
         for key, value in variables.items():
             if value:

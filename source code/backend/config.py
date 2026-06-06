@@ -35,16 +35,15 @@ class Settings(BaseSettings):
     DEBUG: bool = Field(default=True, alias="DEBUG")
     LOG_LEVEL: str = Field(default="INFO", alias="LOG_LEVEL")
     
-    # ── Database ──────────────────────────────────────────────────────────
-    DATABASE_URL: str = Field(
-        default="postgresql://autoinsight:changeme@localhost:5432/autoinsight",
-        alias="DATABASE_URL",
+    # ── Convex Database ───────────────────────────────────────────────────
+    CONVEX_URL: str = Field(
+        default="https://happy-otter-123.convex.cloud",
+        alias="CONVEX_URL",
     )
-    DB_HOST: str = Field(default="localhost", alias="DB_HOST")
-    DB_PORT: int = Field(default=5432, alias="DB_PORT")
-    DB_NAME: str = Field(default="autoinsight", alias="DB_NAME")
-    DB_USER: str = Field(default="autoinsight", alias="DB_USER")
-    DB_PASSWORD: str = Field(default="changeme", alias="DB_PASSWORD")
+    CONVEX_DEPLOY_KEY: Optional[str] = Field(
+        default=None,
+        alias="CONVEX_DEPLOY_KEY",
+    )
     
     # ── Redis (Cache + Task Queue) ────────────────────────────────────────
     REDIS_URL: str = Field(
@@ -69,7 +68,7 @@ class Settings(BaseSettings):
     LLM_PROVIDER: str = Field(
         default="groq",
         alias="LLM_PROVIDER",
-        description="LLM provider: 'groq' or 'ollama'",
+        description="LLM provider: 'groq'",
     )
     GROQ_API_KEY: Optional[str] = Field(
         default=None, alias="GROQ_API_KEY",
@@ -194,8 +193,8 @@ class Settings(BaseSettings):
     @classmethod
     def validate_llm_provider(cls, v: str) -> str:
         """Validate LLM provider selection."""
-        if v.lower() not in ("groq", "ollama"):
-            raise ValueError(f"Invalid LLM provider: {v}. Must be 'groq' or 'ollama'.")
+        if v.lower() != "groq":
+            raise ValueError(f"Invalid LLM provider: {v}. Must be 'groq'.")
         return v.lower()
     
     @field_validator("LOG_LEVEL")

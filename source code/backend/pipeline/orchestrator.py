@@ -184,7 +184,6 @@ class PipelineOrchestrator:
                     fn=self._stage2_execute,
                     df=df,
                     pipeline_id=pipeline_id,
-                    tracker=tracker,
                 )
                 stages_completed.append("Data Cleaning")
             else:
@@ -199,7 +198,6 @@ class PipelineOrchestrator:
                 tracker=tracker,
                 fn=self._stage3_execute,
                 df=df,
-                tracker=tracker,
             )
             stages_completed.append("LangGraph Agent")
             
@@ -211,7 +209,6 @@ class PipelineOrchestrator:
                 fn=self._stage4_execute,
                 df=df,
                 udm=unified_data_model,
-                tracker=tracker,
             )
             stages_completed.append("Column Engineering")
             
@@ -320,7 +317,9 @@ class PipelineOrchestrator:
                         continue
                     
                     await tracker.fail_stage(str(e), attempt - 1)
-                    raise StageError(stage_num, stage_name, str(e), attempt - 1)    async def _stage1_execute(
+                    raise StageError(stage_num, stage_name, str(e), attempt - 1)
+
+    async def _stage1_execute(
         self,
         file_path: str,
         pipeline_id: str,

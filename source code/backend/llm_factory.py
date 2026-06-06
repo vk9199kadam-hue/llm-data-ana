@@ -37,7 +37,7 @@ import time
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar
 
-from langchain.schema import BaseMessage, HumanMessage, SystemMessage
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_groq import ChatGroq
@@ -104,10 +104,9 @@ class LLMFactory:
         self.max_retries = max_retries
         self.timeout = timeout
         
-        if self.provider not in ("groq", "ollama"):
-            raise LLMFactoryError(
-                f"Invalid provider: '{provider}'. Must be 'groq' or 'ollama'."
-            )
+        if self.provider != "groq":
+            logger.warning(f"Ollama requested, but system is configured for Groq exclusive mode. Switching provider to groq.")
+            self.provider = "groq"
         
         self.llm = self._initialize_llm()
         logger.info(
@@ -329,65 +328,17 @@ class LLMFactory:
         user_prompt: str,
         output_model: Type[T],
         variables: Optional[Dict[str, Any]] = None,
-        fallback_provider: str = "ollama",
+        fallback_provider: str = "groq",
     ) -> T:
         """
-        Execute LLM call with automatic fallback to secondary provider.
-        
-        Tries the primary provider first. If it fails after all retries,
-        automatically falls back to the secondary provider.
-        
-        This implements the dual-provider fault tolerance strategy:
-          Primary: Qwen 2.5 72B (Groq Free Tier)
-          Fallback: Llama 3.1 8B (Ollama Local)
-        
-        Args:
-            system_prompt: System prompt
-            user_prompt: User query
-            output_model: Expected output Pydantic model
-            variables: Template variables
-            fallback_provider: Fallback provider ("ollama" or "groq")
-        
-        Returns:
-            Validated Pydantic model from primary or fallback
-        
-        Raises:
-            LLMFactoryError: If both providers fail
+        Execute LLM call. In Groq-Exclusive mode, fallback is disabled.
         """
-        try:
-            return await self.invoke_agent(
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                output_model=output_model,
-                variables=variables,
-            )
-        except LLMFactoryError as primary_error:
-            logger.warning(
-                f"Primary LLM ({self.provider}) failed. "
-                f"Falling back to {fallback_provider}. "
-                f"Error: {primary_error}"
-            )
-            
-            # Create fallback factory
-            fallback = LLMFactory(
-                provider=fallback_provider,
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-            )
-            
-            try:
-                return await fallback.invoke_agent(
-                    system_prompt=system_prompt,
-                    user_prompt=user_prompt,
-                    output_model=output_model,
-                    variables=variables,
-                )
-            except LLMFactoryError as fallback_error:
-                raise LLMFactoryError(
-                    f"Both LLM providers failed. "
-                    f"Primary ({self.provider}): {primary_error}. "
-                    f"Fallback ({fallback_provider}): {fallback_error}."
-                )
+        return await self.invoke_agent(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            output_model=output_model,
+            variables=variables,
+        )
     
     def _get_model_name(self) -> str:
         """Get the current model name."""

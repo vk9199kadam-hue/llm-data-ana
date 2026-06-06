@@ -202,6 +202,17 @@ def safe_eval_polars(
     try:
         tree = ast.parse(expression, mode="eval")
     except SyntaxError as e:
+        try:
+            stmt_tree = ast.parse(expression, mode="exec")
+            for node in ast.walk(stmt_tree):
+                if isinstance(node, (ast.Import, ast.ImportFrom)):
+                    raise SandboxViolation("Blocked import statement")
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in BLOCKED_NAMES:
+                    raise SandboxViolation(f"Blocked function call: '{node.func.id}'")
+        except SandboxViolation:
+            raise
+        except Exception:
+            pass
         raise ValueError(f"Invalid expression syntax: {e}")
     
     # Step 2: AST Walk — reject dangerous nodes
@@ -890,7 +901,7 @@ def mask_pii(df: pl.DataFrame) -> Tuple[pl.DataFrame, List[Dict[str, Any]]]:
                 return re.sub(pattern, mask_func, val)
             
             result = result.with_columns(
-                result[col].apply(mask_value).alias(col)
+                result[col].map_elements(mask_value, return_dtype=pl.String).alias(col)
             )
     
     return result, detected_pii
