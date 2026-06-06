@@ -25,6 +25,7 @@ interface ChartDataPoint {
   values?: number[];
   type?: string;
   name?: string;
+  mode?: string;
   marker?: Record<string, any>;
   text?: string[];
   hovertemplate?: string;
