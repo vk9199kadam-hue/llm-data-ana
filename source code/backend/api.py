@@ -377,10 +377,10 @@ async def upload_cancel(upload_id: str):
 # ── Auth Routes ────────────────────────────────────────────────────────────
 
 @api_v1.post("/auth/login", tags=["Authentication"])
-async def login(email: str, password: str):
+async def login(email: str = Form(...), password: str = Form(...)):
     from backend.auth import create_tokens
 
-    if password != "password":
+    if not email or len(password) < 8:
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     tokens = create_tokens(user_id=str(uuid4()), email=email, role="analyst")
@@ -394,7 +394,7 @@ async def login(email: str, password: str):
 
 
 @api_v1.post("/auth/refresh", tags=["Authentication"])
-async def refresh_token(refresh_token: str):
+async def refresh_token(refresh_token: str = Form(...)):
     from backend.auth import refresh_access_token
     new_tokens = await refresh_access_token(refresh_token)
 
@@ -407,7 +407,7 @@ async def refresh_token(refresh_token: str):
 
 
 @api_v1.post("/auth/register", tags=["Authentication"])
-async def register(email: str, password: str, name: str):
+async def register(email: str = Form(...), password: str = Form(...), name: str = Form(...)):
     from backend.auth import hash_password
     hashed = hash_password(password)
 
